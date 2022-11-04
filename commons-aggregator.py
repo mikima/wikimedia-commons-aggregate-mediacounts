@@ -3,6 +3,7 @@ import bz2
 from time import process_time
 import csv
 import os
+from datetime import date, timedelta
 
 #call it
 # 
@@ -72,5 +73,17 @@ def loadDecompress(url, limit):
     aprint('removed dowloaded file', t0)
 
 
-loadDecompress("https://projects.densitydesign.org/sample.tsv.bz2", 100)
+#loadDecompress("https://projects.densitydesign.org/sample.tsv.bz2", 100)
 #loadDecompress("https://dumps.wikimedia.org/other/mediacounts/daily/2022/mediacounts.2022-01-07.v00.tsv.bz2", 100)
+
+from datetime import date, timedelta
+
+start_date = date(2022, 1, 1) 
+end_date = date(2022, 11, 3)
+
+delta = end_date - start_date   # returns timedelta
+
+for i in range(delta.days + 1):
+    day = start_date + timedelta(days=i)
+    url = "https://dumps.wikimedia.org/other/mediacounts/daily/2022/mediacounts."+str(day)+".v00.tsv.bz2"
+    loadDecompress(url, 100)
