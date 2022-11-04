@@ -1,0 +1,163 @@
+
+'''
+    for line in data:
+        row = line.split('\t')
+        if 'mini-file_acrobat' in row[0]:
+            print(row)
+
+        if int(row[2]) > 10 and 'commons' in row[0]:
+            #print(row[0], row[2])
+            filtered.append([row[0], int(row[2])])
+            '''
+
+
+
+
+'''
+#tentativo lettura con csv
+mydata = []
+
+with open('mediacounts.2022-01-01.v00.tsv') as data:
+    # see https://dumps.wikimedia.org/other/mediacounts/README.txt for fields description
+    print('reading...')
+    reader = csv.DictReader(data, delimiter='\t', fieldnames=['name',2,'total_transfers',4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25])
+
+    totalrows = sum(1 for line in reader)
+
+    print(totalrows)
+
+    for row in reader:
+        item = {'name': row['name'], 'transfers':row['total_transfers'] }
+        print(item)
+        mydata.append(item)
+
+    print(mydata)
+    
+    print('filtering')
+    #print('sorting')
+    #sortedlist = sorted(reader, key=lambda row:(row['total_transfers']), reverse=False)
+
+    #for row in islice(sortedlist, 10): # first 10 only
+    #    print(row)
+'''
+
+# pandas
+'''
+df = pd.read_csv('mediacounts.2022-01-01.v00.tsv')
+saved_column = df.column_name
+print(saved_column)
+'''
+
+
+    '''
+    print('first')
+    opened 3.0000000000030003e-06
+    filtered 9.925768999999999
+    splitted 384.272581
+
+    first = process_time()
+    
+
+    print('opened', process_time() - first)
+
+    filtered = list(filter(lambda line: 'wikipedia/commons' in line, data))
+
+    print('filtered', process_time() - first)
+
+    myList = [i.split('\t') for i in filtered]
+
+    print('splitted', process_time() - first)
+    '''
+
+    '''
+    opened 4.999999999991123e-06
+    filtered 10.316464
+    splitted 134.793958
+    first = process_time()
+
+    print('opened', process_time() - first)
+
+    filtered = list(filter(lambda line: 'wikipedia/commons' in line, data))
+
+    print('filtered', process_time() - first)
+
+    myList = [[i.split('\t')[0], i.split('\t')[1]] for i in filtered]
+
+    print('splitted', process_time() - first)
+    '''
+
+
+
+    '''
+# urllib.request.urlretrieve("https://dumps.wikimedia.org/other/mediacounts/daily/2022/mediacounts.2022-01-07.v00.tsv.bz2", "mediacounts.2022-01-07.v00.tsv.bz2")
+t1 = datetime.datetime.now()
+print('open')
+zipfile = bz2.BZ2File('mediacounts.2022-01-07.v00.tsv.bz2') # open the file
+t2 = datetime.datetime.now()
+print('decompress', t2-t1)
+data = zipfile.read() # get the decompressed data
+t3 = datetime.datetime.now()
+print('done', t3-t2)
+print(data)
+'''
+
+def extractListFromFile(file, limit):
+
+    with open(file) as data:
+
+        # create list, extract name and number of requests
+        splitted = [[i.split('\t')[0], int(i.split('\t')[2])] for i in data]
+
+        print('splitted')
+
+        # filter the list
+        filtered = list(filter(lambda row: row[1] > limit and 'commons' in row[0], splitted))
+        
+        print('filtered')
+
+        ordered = sorted(filtered, key=lambda x: x[1], reverse=True)
+
+        print('ordered')
+
+        #pprint(ordered)
+
+        # save it
+        # open the file in the write mode
+        with open(file.split(".")[0]+'.'+file.split(".")[1]+"_out.csv", 'w') as f:
+            # create the csv writer
+            writer = csv.writer(f)
+            for row in ordered:
+                name = row[0].split("/")[-1]
+                # write a row to the csv file
+                writer.writerow([name,row[1]])
+
+# this function requires a list in input
+def extractList(file, limit):
+
+    with open(file) as data:
+
+        # create list, extract name and number of requests
+        splitted = [[i.split('\t')[0], int(i.split('\t')[2])] for i in data]
+
+        print('splitted')
+
+        # filter the list
+        filtered = list(filter(lambda row: row[1] > limit and 'commons' in row[0], splitted))
+        
+        print('filtered')
+
+        ordered = sorted(filtered, key=lambda x: x[1], reverse=True)
+
+        print('ordered')
+
+        #pprint(ordered)
+
+        # save it
+        # open the file in the write mode
+        with open(file.split(".")[0]+'.'+file.split(".")[1]+"_out.csv", 'w') as f:
+            # create the csv writer
+            writer = csv.writer(f)
+            for row in ordered:
+                name = row[0].split("/")[-1]
+                # write a row to the csv file
+                writer.writerow([name,row[1]])
