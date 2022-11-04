@@ -78,7 +78,7 @@ def loadDecompress(url, limit):
 
 from datetime import date, timedelta
 
-start_date = date(2022, 1, 1) 
+start_date = date(2022, 1, 5) 
 end_date = date(2022, 11, 3)
 
 delta = end_date - start_date   # returns timedelta
