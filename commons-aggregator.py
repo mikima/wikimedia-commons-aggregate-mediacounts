@@ -45,15 +45,20 @@ def loadDecompress(url, limit):
     data = binaries.decode().splitlines()
     aprint('decoded', t0)
 
+    for i in data:
+        print(i.split("\t")[22])
+
     # create list, extract name and number of requests
-    splitted = [[i.split('\t')[0], int(i.split('\t')[2])] for i in data]
+    # column 0 is the name, column 2 contains the total requests, and column 22 are the requests from mediawiki
+    # for more info see https://dumps.wikimedia.org/other/mediacounts/README.txt
+    splitted = [[i.split('\t')[0], int(i.split('\t')[2]),int(i.split('\t')[22])] for i in data]
     aprint('splitted', t0)
 
     # filter the list
-    filtered = list(filter(lambda row: row[1] > limit and 'commons' in row[0], splitted))   
+    filtered = list(filter(lambda row: row[2] > limit and 'commons' in row[0], splitted))   
     aprint('filtered', t0)
 
-    ordered = sorted(filtered, key=lambda x: x[1], reverse=True)
+    ordered = sorted(filtered, key=lambda x: x[2], reverse=True)
 
     aprint('ordered', t0)
 
@@ -62,10 +67,13 @@ def loadDecompress(url, limit):
     with open('out/'+name.split(".")[0]+'.'+name.split(".")[1]+"_out.csv", 'w') as f:
         # create the csv writer
         writer = csv.writer(f)
+        headers = ['name','total','internal']
+        writer.writerow(headers)
+
+        # write all the lines
         for row in ordered:
-            pagename = row[0].split("/")[-1]
             # write a row to the csv file
-            writer.writerow([pagename,row[1]])
+            writer.writerow([row[0],row[1],row[2]])
     
     aprint('saved', t0)
     #remove the downloaded file
@@ -73,12 +81,12 @@ def loadDecompress(url, limit):
     aprint('removed dowloaded file', t0)
 
 
-#loadDecompress("https://projects.densitydesign.org/sample.tsv.bz2", 100)
+#loadDecompress("https://projects.densitydesign.org/sample.tsv.bz2", 0)
 #loadDecompress("https://dumps.wikimedia.org/other/mediacounts/daily/2022/mediacounts.2022-01-07.v00.tsv.bz2", 100)
 
-from datetime import date, timedelta
+#
 
-start_date = date(2022, 1, 5) 
+start_date = date(2022, 1, 1) 
 end_date = date(2022, 11, 3)
 
 delta = end_date - start_date   # returns timedelta
