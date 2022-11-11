@@ -31,9 +31,9 @@ def enrich(titles):
 #enrich()
 output = []
 
-with open('tests/mediacounts.2022-01-01_out.csv', 'r') as file:
+with open('tests/top1000year.csv', 'r') as file:
     # create the reader
-    reader = csv.DictReader(file.readlines()[0:2000])
+    reader = csv.DictReader(file.readlines())#[0:2000])
 
 
     with open('tests/enriched.csv', 'w') as outfile:
