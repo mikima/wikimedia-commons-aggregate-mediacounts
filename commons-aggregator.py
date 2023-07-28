@@ -45,9 +45,6 @@ def loadDecompress(url, limit):
     data = binaries.decode().splitlines()
     aprint('decoded', t0)
 
-    for i in data:
-        print(i.split("\t")[22])
-
     # create list, extract name and number of requests
     # column 0 is the name, column 2 contains the total requests, and column 22 are the requests from mediawiki
     # for more info see https://dumps.wikimedia.org/other/mediacounts/README.txt
@@ -86,8 +83,8 @@ def loadDecompress(url, limit):
 
 #
 
-start_date = date(2022, 1, 1) 
-end_date = date(2022, 11, 3)
+start_date = date(2022, 12, 17)
+end_date = date(2022, 12, 31)
 
 delta = end_date - start_date   # returns timedelta
 
