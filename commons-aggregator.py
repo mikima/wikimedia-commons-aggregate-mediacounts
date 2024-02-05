@@ -1,6 +1,6 @@
 import urllib.request
 import bz2
-from time import process_time
+import time
 import csv
 import os
 from datetime import date, timedelta
@@ -9,17 +9,19 @@ from datetime import date, timedelta
 # 
 def loadDecompress(url, limit):
 
+    # get initial time
+    t0 = time.time()
+
     # advancement printer function
     def aprint(text, startTime):
-        print("\t",text, round(process_time()-startTime,2))
+        print("\t",text, round(time.time()-startTime,2))
 
     # prepare progressbar
     def show_progress(block_num, block_size, total_size):
         print('downloading', end=' ')
-        print(str(round(block_num * block_size / total_size *100,2))+"%", end="\r")
+        print(str(round(block_num * block_size / total_size *100,2))+"% - " + str(round(time.time()-t0,0)) + ' seconds', end="\r")
 
-    # get initial time
-    t0 = process_time()
+    print(t0)
 
     #####################
     # start the process #
@@ -83,12 +85,13 @@ def loadDecompress(url, limit):
 
 #
 
-start_date = date(2022, 12, 17)
-end_date = date(2022, 12, 31)
+start_date = date(2023, 1, 15)
+end_date = date(2023, 12, 31)
 
 delta = end_date - start_date   # returns timedelta
 
 for i in range(delta.days + 1):
     day = start_date + timedelta(days=i)
-    url = "https://dumps.wikimedia.org/other/mediacounts/daily/2022/mediacounts."+str(day)+".v00.tsv.bz2"
+    url = "https://dumps.wikimedia.org/other/mediacounts/daily/2023/mediacounts."+str(day)+".v00.tsv.bz2"
+    print(url)
     loadDecompress(url, 100)
