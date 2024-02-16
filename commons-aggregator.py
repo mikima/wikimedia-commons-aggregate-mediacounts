@@ -5,6 +5,8 @@ import csv
 import os
 from datetime import date, timedelta
 
+#print
+print('updated version')
 #call it
 # 
 def loadDecompress(url, limit):
@@ -62,8 +64,9 @@ def loadDecompress(url, limit):
     aprint('ordered', t0)
 
     # save it
+    outCsv = 'out/'+name.split(".")[0]+'.'+name.split(".")[1]+".csv"
     # open the file in the write mode
-    with open('out/'+name.split(".")[0]+'.'+name.split(".")[1]+"_out.csv", 'w') as f:
+    with open(outCsv, 'w') as f:
         # create the csv writer
         writer = csv.writer(f)
         headers = ['name','total','internal']
@@ -75,6 +78,11 @@ def loadDecompress(url, limit):
             writer.writerow([row[0],row[1],row[2]])
     
     aprint('saved', t0)
+
+    #zip the file
+    os.system('gzip '+outCsv)
+    aprint('zipped', t0)
+
     #remove the downloaded file
     os.remove(name)
     aprint('removed dowloaded file', t0)
@@ -85,7 +93,7 @@ def loadDecompress(url, limit):
 
 #
 
-start_date = date(2023, 1, 15)
+start_date = date(2023, 1, 1)
 end_date = date(2023, 12, 31)
 
 delta = end_date - start_date   # returns timedelta
