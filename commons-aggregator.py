@@ -102,7 +102,12 @@ def loadDecompress(url, limit):
     os.system('gzip '+outCsv)
     aprint('zipped', t0)
 
-#
+    #delete the unzipped file, if present
+    #delete the compressed file
+    if os.path.exists(outCsv):
+        os.system('rm '+outCsv)
+        aprint('deleted uncompressed out file', t0)
+
 
 start_date = date(2023, 1, 1)
 end_date = date(2023, 12, 31)
