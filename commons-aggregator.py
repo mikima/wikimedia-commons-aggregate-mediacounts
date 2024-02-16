@@ -5,7 +5,7 @@ import os
 from datetime import date, timedelta
 
 #print
-print('updated version 2 for linux')
+print('updated version 3 for linux')
 #call it
 # 
 def loadDecompress(url, limit):
@@ -65,7 +65,6 @@ def loadDecompress(url, limit):
                     # In case the value in column 22 is not a number, skip this row
                     continue
 
-
     aprint('read', t0)
 
     ordered = sorted(filtered_rows, key=lambda x: x[2], reverse=True)
@@ -87,6 +86,17 @@ def loadDecompress(url, limit):
             writer.writerow([row[0],row[1],row[2]])
     
     aprint('saved', t0)
+
+    #delete the original file
+    #if the original file is still there, delete it
+    
+    if os.path.exists(name.replace('.bz2','')):
+        os.system('rm '+name.replace('.bz2',''))
+        aprint('deleted uncompressed file', t0)
+    #delete the compressed file
+    if os.path.exists(name):
+        os.system('rm '+name)
+        aprint('deleted uncompressed file', t0)
 
     #zip the file
     os.system('gzip '+outCsv)
