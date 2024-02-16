@@ -93,10 +93,11 @@ def loadDecompress(url, limit):
     if os.path.exists(name.replace('.bz2','')):
         os.system('rm '+name.replace('.bz2',''))
         aprint('deleted uncompressed file', t0)
+
     #delete the compressed file
     if os.path.exists(name):
         os.system('rm '+name)
-        aprint('deleted uncompressed file', t0)
+        aprint('deleted compressed file', t0)
 
     #zip the file
     os.system('gzip '+outCsv)
@@ -109,7 +110,7 @@ def loadDecompress(url, limit):
         aprint('deleted uncompressed out file', t0)
 
 
-start_date = date(2023, 1, 1)
+start_date = date(2023, 1, 10)
 end_date = date(2023, 12, 31)
 
 delta = end_date - start_date   # returns timedelta
