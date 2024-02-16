@@ -1,12 +1,11 @@
 import urllib.request
-import bz2
 import time
 import csv
 import os
 from datetime import date, timedelta
 
 #print
-print('updated version')
+print('updated version 2 for linux')
 #call it
 # 
 def loadDecompress(url, limit):
@@ -35,31 +34,41 @@ def loadDecompress(url, limit):
     name = url.split("/")[-1]
     urllib.request.urlretrieve(url, name, show_progress)
     print('')
-    aprint('open', t0)
+    aprint('downloaded', t0)
 
-    # open the file
-    zipfile = bz2.BZ2File(name) 
+
+    # open the file using os bzip2 function
+    os.system('bzip2 -d '+name)
+    aprint('decompressed', t0)
+
+    # open the tsv file, load only column 0, 2 and 22
+    # column 0 is the name, column 2 contains the total requests, and column 22 are the requests from mediawiki
+    # Variable to store the filtered rows
+    filtered_rows = []
+
+    # Open the TSV file
+    with open(name.replace('.bz2',''), mode='r', newline='', encoding='utf-8') as file:
+        # Create a reader to read the file with tab as a delimiter
+        tsv_reader = csv.reader(file, delimiter='\t')
+        
+        # Loop over each row in the TSV file
+        for row in tsv_reader:
+            # Check if the row has at least 23 columns and meets the specific conditions
+            if len(row) > 22 and "commons" in row[0]:
+                try:
+                    # Check if the value in column 22 is greater than 100
+                    # Column indexes are 0-based, so index 22 is the 23rd column
+                    if float(row[22]) > 100:
+                        # If conditions are met, save the row
+                        filtered_rows.append([row[0], row[2], row[22]])
+                except ValueError:
+                    # In case the value in column 22 is not a number, skip this row
+                    continue
+
+
     aprint('read', t0)
 
-    # get the decompressed data
-    binaries = zipfile.read() 
-    aprint('decompress', t0)
-
-    #decode it
-    data = binaries.decode().splitlines()
-    aprint('decoded', t0)
-
-    # create list, extract name and number of requests
-    # column 0 is the name, column 2 contains the total requests, and column 22 are the requests from mediawiki
-    # for more info see https://dumps.wikimedia.org/other/mediacounts/README.txt
-    splitted = [[i.split('\t')[0], int(i.split('\t')[2]),int(i.split('\t')[22])] for i in data]
-    aprint('splitted', t0)
-
-    # filter the list
-    filtered = list(filter(lambda row: row[2] > limit and 'commons' in row[0], splitted))   
-    aprint('filtered', t0)
-
-    ordered = sorted(filtered, key=lambda x: x[2], reverse=True)
+    ordered = sorted(filtered_rows, key=lambda x: x[2], reverse=True)
 
     aprint('ordered', t0)
 
@@ -82,14 +91,6 @@ def loadDecompress(url, limit):
     #zip the file
     os.system('gzip '+outCsv)
     aprint('zipped', t0)
-
-    #remove the downloaded file
-    os.remove(name)
-    aprint('removed dowloaded file', t0)
-
-
-#loadDecompress("https://projects.densitydesign.org/sample.tsv.bz2", 0)
-#loadDecompress("https://dumps.wikimedia.org/other/mediacounts/daily/2022/mediacounts.2022-01-07.v00.tsv.bz2", 100)
 
 #
 
