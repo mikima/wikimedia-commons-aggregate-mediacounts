@@ -115,7 +115,7 @@ def loadDecompress(url, limit):
         os.system('rm '+outCsv)
 
 
-    start_date = date(2023, 1, 10)
+start_date = date(2023, 1, 10)
 end_date = date(2023, 12, 31)
 
 delta = end_date - start_date   # returns timedelta
