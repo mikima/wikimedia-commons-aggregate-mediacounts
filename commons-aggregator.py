@@ -87,32 +87,24 @@ def loadDecompress(url, limit):
     
         aprint('saved', t0)
 
+        #zip the file
+        zipName = 'zip_'+outCsv+'.gz'
+        os.system('gzip '+outCsv)
+        aprint('zipped', t0)
+
         #delete the original file
         #if the original file is still there, delete it
         
         try:
-            os.system('rm '+name.replace('.bz2',''))
-            aprint('deleted uncompressed file', t0)
+            #delete compressed and uncompresed file
+            os.system('rm mediacounts.*')
+            #delete uncompressed out file
+            os.system('rm out/mediacounts*.tsv')
+
+            aprint('deleted files', t0)
         except Exception as e:  # Add except clause here
             print(e)
             pass
-
-
-        #delete the compressed file
-        try:
-            os.system('rm '+name)
-            aprint('deleted compressed file', t0)
-        except Exception as e:  # Add except clause here
-            print(e)
-            pass
-
-        #zip the file
-        os.system('gzip '+outCsv)
-        aprint('zipped', t0)
-
-        #delete the unzipped file, if present
-        #delete the compressed file
-        os.system('rm '+outCsv)
 
 
 start_date = date(2023, 1, 10)
