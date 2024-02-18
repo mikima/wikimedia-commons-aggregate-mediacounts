@@ -85,32 +85,37 @@ def loadDecompress(url, limit):
             # write a row to the csv file
             writer.writerow([row[0],row[1],row[2]])
     
-    aprint('saved', t0)
+        aprint('saved', t0)
 
-    #delete the original file
-    #if the original file is still there, delete it
-    
-    if os.path.exists(name.replace('.bz2','')):
-        os.system('rm '+name.replace('.bz2',''))
-        aprint('deleted uncompressed file', t0)
+        #delete the original file
+        #if the original file is still there, delete it
+        
+        try:
+            os.system('rm '+name.replace('.bz2',''))
+            aprint('deleted uncompressed file', t0)
+        except Exception as e:  # Add except clause here
+            print(e)
+            pass
 
-    #delete the compressed file
-    if os.path.exists(name):
-        os.system('rm '+name)
-        aprint('deleted compressed file', t0)
 
-    #zip the file
-    os.system('gzip '+outCsv)
-    aprint('zipped', t0)
+        #delete the compressed file
+        try:
+            os.system('rm '+name)
+            aprint('deleted compressed file', t0)
+        except Exception as e:  # Add except clause here
+            print(e)
+            pass
 
-    #delete the unzipped file, if present
-    #delete the compressed file
-    if os.path.exists(outCsv):
+        #zip the file
+        os.system('gzip '+outCsv)
+        aprint('zipped', t0)
+
+        #delete the unzipped file, if present
+        #delete the compressed file
         os.system('rm '+outCsv)
-        aprint('deleted uncompressed out file', t0)
 
 
-start_date = date(2023, 1, 10)
+    start_date = date(2023, 1, 10)
 end_date = date(2023, 12, 31)
 
 delta = end_date - start_date   # returns timedelta
