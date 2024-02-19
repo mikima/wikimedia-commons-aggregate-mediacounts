@@ -94,12 +94,15 @@ def loadDecompress(url, limit):
 
         #delete the original file
         #if the original file is still there, delete it
+
+        path = os.path.dirname(os.path.abspath(__file__))
         
         try:
             #delete compressed and uncompresed file
-            os.system('rm mediacounts.*')
-            #delete uncompressed out file
-            os.system('rm out/mediacounts*.tsv')
+            os.remove(path, name.replace('.bz2',''))
+            os.remove(path, name)
+            os.remove(path+"/out/", zipName)
+
 
             aprint('deleted files', t0)
         except Exception as e:  # Add except clause here
