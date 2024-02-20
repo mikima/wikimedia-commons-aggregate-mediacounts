@@ -98,19 +98,29 @@ def loadDecompress(url, limit):
         path = os.path.dirname(os.path.abspath(__file__))
         
         try:
-            #delete compressed and uncompresed file
-            os.remove(path, name.replace('.bz2',''))
-            os.remove(path, name)
-            os.remove(path+"/out/", zipName)
+            decompressed_file_path = os.path.join(path, name.replace('.bz2', ''))
+            original_file_path = os.path.join(path, name)
+            zipped_file_path = os.path.join(path, "out", 'zip_'+outCsv+'.gz')
 
+            # Check if the decompressed file exists and delete it
+            if os.path.exists(decompressed_file_path):
+                os.remove(decompressed_file_path)
+            
+            # Check if the original file exists and delete it
+            if os.path.exists(original_file_path):
+                os.remove(original_file_path)
+            
+            # Check if the zipped output file exists and delete it
+            if os.path.exists(zipped_file_path):
+                os.remove(zipped_file_path)
 
             aprint('deleted files', t0)
-        except Exception as e:  # Add except clause here
-            print(e)
-            pass
+        except Exception as e:
+            print(f"Error deleting files: {e}")
 
 
-start_date = date(2023, 1, 10)
+
+start_date = date(2023, 1, 1)
 end_date = date(2023, 12, 31)
 
 delta = end_date - start_date   # returns timedelta
