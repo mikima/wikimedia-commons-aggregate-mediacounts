@@ -31,12 +31,12 @@ def enrich(titles):
 #enrich()
 output = []
 
-with open('tests/top1000year.csv', 'r') as file:
+with open('aggregated_output.csv', 'r') as file:
     # create the reader
     reader = csv.DictReader(file.readlines())#[0:2000])
 
 
-    with open('tests/enriched.csv', 'w') as outfile:
+    with open('enriched.csv', 'w') as outfile:
         # create the csv writer
         writer = csv.writer(outfile)
         # write the headers

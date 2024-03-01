@@ -155,6 +155,8 @@ tests/
 
 # exclude all files in 'out'folder
 out/*
+out-10/*
 
 # but keep the folder
 !out/.gitkeep 
+!out-10/.gitkeep 
