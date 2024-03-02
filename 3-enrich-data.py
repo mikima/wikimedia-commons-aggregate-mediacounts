@@ -2,71 +2,71 @@ import requests
 import csv
 from pprint import pprint
 
-
-#function to create chuncks
 def create_chunks(lst, n):
-    # Yield successive n-sized chunks from lst.
+    """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
 def enrich(titles):
-    # get sizes using API
-    # example: https://commons.wikimedia.org/w/api.php?action=query&format=json&iiprop=url|size|mediatype|commonmetadata&prop=imageinfo&titles=File:Icons-mini-file_acrobat.gif|File:Background-bubbles-blue.svg
-    # titles = ['File:Icons-mini-file_acrobat.gif','File:Background-bubbles-blue.svg']
-    
+    """Enrich titles with data from Wikimedia Commons API."""
     baseurl = 'https://commons.wikimedia.org/w/api.php'
-    params = {}
-    params['action'] = 'query'
-    params['formatversion'] = '2'
-    params['format'] = 'json'
-    params['titles'] = "|".join(titles)
-    params['prop'] = 'imageinfo'
-    params['iiprop'] = 'url|size|mediatype'
-
-    r = requests.get(baseurl, params = params)
-    data = r.json()
+    params = {
+        'action': 'query',
+        'formatversion': '2',
+        'format': 'json',
+        'titles': "|".join(titles),
+        'prop': 'imageinfo',
+        'iiprop': 'url|size|mediatype'
+    }
+    response = requests.get(baseurl, params=params)
+    data = response.json()
     return data
 
+def process_and_write_csv(chunk, writer, processed_titles):
+    """Process a chunk of data and write to CSV."""
+    titles = ['File:' + row['name'] for row in chunk if 'File:' + row['name'] not in processed_titles]
+    chunkdic = {'File:'+i['name']:i for i in chunk if 'File:' + row['name'] not in processed_titles}
+    if not titles:  # Skip processing if all titles in the chunk have been processed
+        return
+    enriched_data = enrich(titles)['query']['pages']
+    for page in enriched_data:
+        try:
+            imgtitle = page['title']
+            imginfo = page['imageinfo'][0]
+            writer.writerow([
+                imgtitle,
+                imginfo['url'],
+                imginfo['width'],
+                imginfo['height'],
+                imginfo['width'] * imginfo['height'],
+                imginfo['mediatype'],
+                chunkdic[imgtitle.replace(" ", "_")]['total'],
+                chunkdic[imgtitle.replace(" ", "_")]['internal']
+            ])
+            processed_titles.add(imgtitle)  # Mark title as processed
+            print(f" Processed {imgtitle}")
+        except KeyError:
+            print(f"ERROR: Missing data for {page['title']}")
 
-#enrich()
-output = []
+# Initialize set to keep track of processed titles
+processed_titles = set()
 
-with open('aggregated_output.csv', 'r') as file:
-    # create the reader
-    reader = csv.DictReader(file.readlines())#[0:2000])
+#read 'enriched.csv', extract column "title" and add to processed_titles
+with open('enriched.csv', 'r') as file:
+    reader = csv.DictReader(file)
+    for row in reader:
+        processed_titles.add(row['title'])
 
-
-    with open('enriched.csv', 'w') as outfile:
-        # create the csv writer
-        writer = csv.writer(outfile)
-        # write the headers
-        writer.writerow(['title','url','width','height','area', 'mediatype', 'totalrequests','internalrequests'])
-        
-        # divide it in chuks
-        chunks = list(create_chunks(list(reader), 10))
-        print('chuncks created')
-
-        #for each chunk, call apis and write out the results
-        for chunk in chunks:
-            titles = ['File:'+i['name'] for i in chunk]
-            chunkdic = {'File:'+i['name']:i for i in chunk}
-            #print(titles)
-            enriched = enrich(titles)['query']['pages']
-
-            pprint(enriched)
-            for page in enriched:
-                #pprint(page['title'])
-                #pprint(page)
-                try:
-                    imgtitle = page['title']
-                    imgurl = page['imageinfo'][0]['url']
-                    imgwidth = page['imageinfo'][0]['width']
-                    imgheight = page['imageinfo'][0]['height']
-                    imgmediatype = page['imageinfo'][0]['height']
-                    reqs = chunkdic[imgtitle.replace(" ","_")]
-                    #print(chunkdic[imgtitle])
-                    pprint([imgtitle,imgurl,imgwidth,imgheight,imgheight*imgwidth, imgmediatype, reqs['total'],reqs['internal']])
-                    writer.writerow([imgtitle,imgurl,imgwidth,imgheight,imgheight*imgwidth, imgmediatype, reqs['total'],reqs['internal']])
-                except:
-                    print("ERROR:", page['title'])
-                    #writer.writerow([imgtitle])
+# Process input CSV and enrich data
+with open('aggregated_output.csv', 'r') as file, open('enriched.csv', 'w', newline='') as outfile:
+    reader = csv.DictReader(file)
+    writer = csv.writer(outfile)
+    writer.writerow(['title', 'url', 'width', 'height', 'area', 'mediatype', 'totalrequests', 'internalrequests'])
+    
+    refined = [row for row in reader]
+    for row in refined:
+        row['name'] = requests.utils.unquote(row['name'].split('/')[-1])
+    
+    chunks = list(create_chunks(refined, 40))
+    for chunk in chunks:
+        process_and_write_csv(chunk, writer, processed_titles)
