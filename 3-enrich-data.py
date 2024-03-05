@@ -43,30 +43,64 @@ def process_and_write_csv(chunk, writer, processed_titles):
                 chunkdic[imgtitle.replace(" ", "_")]['total'],
                 chunkdic[imgtitle.replace(" ", "_")]['internal']
             ])
-            processed_titles.add(imgtitle)  # Mark title as processed
-            print(f" Processed {imgtitle}")
+            processed_titles.append(imgtitle)  # Mark title as processed
+
+            #print success overriding previous line
+            print(f" SUCCESS: {imgtitle} enriched")
         except KeyError:
-            print(f"ERROR: Missing data for {page['title']}")
+            print(f" ERROR: Missing data for {page['title']}")
 
 # Initialize set to keep track of processed titles
-processed_titles = set()
+processed_titles = []
+
+#check if results/enriched.csv exists
+# if not, create it
+try:
+    with open('results/enriched.csv', 'r') as file:
+        pass
+except FileNotFoundError:
+    with open('results/enriched.csv', 'w', newline='') as outfile:
+        writer = csv.writer(outfile)
+        writer.writerow(['title', 'url', 'width', 'height', 'area', 'mediatype', 'totalrequests', 'internalrequests'])
+
 
 #read 'enriched.csv', extract column "title" and add to processed_titles
-with open('enriched.csv', 'r') as file:
+with open('results/enriched.csv', 'r') as file:
     reader = csv.DictReader(file)
     for row in reader:
-        processed_titles.add(row['title'])
+        #print(row)
+        processed_titles.append(row['title'])
 
-# Process input CSV and enrich data
-with open('aggregated_output.csv', 'r') as file, open('enriched.csv', 'w', newline='') as outfile:
+
+# Process input CSV.
+# check the name column if present in processed_titles. if present, skip it. otherwise, add it to the list of titles to be enriched
+# append the enriched data to results/enriched.csv
+        
+with open('results/aggregated_output.csv', 'r') as file, open('results/enriched.csv', 'a', newline='') as outfile:
     reader = csv.DictReader(file)
+    
+    #create csv writer ahta append new lines
     writer = csv.writer(outfile)
-    writer.writerow(['title', 'url', 'width', 'height', 'area', 'mediatype', 'totalrequests', 'internalrequests'])
     
-    refined = [row for row in reader]
-    for row in refined:
+    cleaned = [row for row in reader]
+    for row in cleaned:
         row['name'] = requests.utils.unquote(row['name'].split('/')[-1])
+
+    #print(processed_titles)
+    # filter refined removing lines whose name is in processed_titles
+    filtered = [row for row in cleaned if row['name'] in processed_titles]
+    refined = [row for row in cleaned if row['name'] not in processed_titles]
+    # print(processed_titles)
+    # print("-----")
+    # print(filtered)
+    print("File:Актер Евгений Воловенко .png" in processed_titles)
+
+    print(f"Filtered {len(filtered)} rows on {len(cleaned)} rows")
+    print(f"Processing {len(refined)} rows on {len(cleaned)} rows")
     
-    chunks = list(create_chunks(refined, 40))
+    chunks = list(create_chunks(refined, 1))
+
     for chunk in chunks:
+        print (f"Processing chunk {chunks.index(chunk)+1} of {len(chunks)}, {(chunks.index(chunk)+1)/len(chunks)}%")
         process_and_write_csv(chunk, writer, processed_titles)
+
