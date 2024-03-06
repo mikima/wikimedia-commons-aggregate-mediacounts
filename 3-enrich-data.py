@@ -34,7 +34,7 @@ def process_and_write_csv(chunk, writer, processed_titles):
             imgtitle = page['title']
             imginfo = page['imageinfo'][0]
             writer.writerow([
-                imgtitle,
+                chunkdic[imgtitle.replace(" ", "_")]['name'],
                 imginfo['url'],
                 imginfo['width'],
                 imginfo['height'],
@@ -43,15 +43,16 @@ def process_and_write_csv(chunk, writer, processed_titles):
                 chunkdic[imgtitle.replace(" ", "_")]['total'],
                 chunkdic[imgtitle.replace(" ", "_")]['internal']
             ])
-            processed_titles.append(imgtitle)  # Mark title as processed
+            processed_titles.add(imgtitle)  # Mark title as processed
 
             #print success overriding previous line
             print(f" SUCCESS: {imgtitle} enriched")
         except KeyError:
             print(f" ERROR: Missing data for {page['title']}")
 
-# Initialize set to keep track of processed titles
-processed_titles = []
+# Initialize processed_titles as set to keep track of processed titles
+
+processed_titles = set()
 
 #check if results/enriched.csv exists
 # if not, create it
@@ -69,31 +70,37 @@ with open('results/enriched.csv', 'r') as file:
     reader = csv.DictReader(file)
     for row in reader:
         #print(row)
-        processed_titles.append(row['title'])
+        processed_titles.add(row['title'])
 
 
 # Process input CSV.
 # check the name column if present in processed_titles. if present, skip it. otherwise, add it to the list of titles to be enriched
 # append the enriched data to results/enriched.csv
         
-with open('results/aggregated_output.csv', 'r') as file, open('results/enriched.csv', 'a', newline='') as outfile:
+with open('results/clean_output-test.csv', 'r') as file, open('results/enriched.csv', 'a', newline='') as outfile:
     reader = csv.DictReader(file)
     
     #create csv writer ahta append new lines
     writer = csv.writer(outfile)
-    
-    cleaned = [row for row in reader]
-    for row in cleaned:
-        row['name'] = requests.utils.unquote(row['name'].split('/')[-1])
 
-    #print(processed_titles)
-    # filter refined removing lines whose name is in processed_titles
+    cleaned = [row for row in reader]
+
+    #print length of processed_titles
+    print(f"Processed {len(processed_titles)} rows")
+    print(processed_titles)
+    #for each row in cleaned, check if the name is in processed_titles, print if present and the name
+    for row in cleaned:
+        print(f"testing {row['name']}")
+
+
+    #for each row in cleaned, remove "File:" from the name
+    #refined = [{'name': row['name'].replace("File:", "")} for row in cleaned]
+
     filtered = [row for row in cleaned if row['name'] in processed_titles]
     refined = [row for row in cleaned if row['name'] not in processed_titles]
-    # print(processed_titles)
-    # print("-----")
-    # print(filtered)
-    print("File:Актер Евгений Воловенко .png" in processed_titles)
+            
+
+
 
     print(f"Filtered {len(filtered)} rows on {len(cleaned)} rows")
     print(f"Processing {len(refined)} rows on {len(cleaned)} rows")
@@ -101,6 +108,6 @@ with open('results/aggregated_output.csv', 'r') as file, open('results/enriched.
     chunks = list(create_chunks(refined, 1))
 
     for chunk in chunks:
-        print (f"Processing chunk {chunks.index(chunk)+1} of {len(chunks)}, {(chunks.index(chunk)+1)/len(chunks)}%")
+        print (f"Processing chunk {chunks.index(chunk)+1} of {len(chunks)}, {(chunks.index(chunk)+1)/len(chunks)*100}%")
         process_and_write_csv(chunk, writer, processed_titles)
 
