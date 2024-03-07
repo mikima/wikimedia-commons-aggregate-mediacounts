@@ -19,13 +19,18 @@ def enrich(titles):
         'iiprop': 'url|size|mediatype'
     }
     response = requests.get(baseurl, params=params)
-    data = response.json()
+    #try yo get data
+    try:
+        data = response.json()
+    except:
+        print(response.text)
+        data = {}
     return data
 
 def process_and_write_csv(chunk, writer, processed_titles):
     """Process a chunk of data and write to CSV."""
-    titles = ['File:' + row['name'] for row in chunk if 'File:' + row['name'] not in processed_titles]
-    chunkdic = {'File:'+i['name']:i for i in chunk if 'File:' + row['name'] not in processed_titles}
+    titles = ['File:' + row['name'] for row in chunk]
+    chunkdic = {'File:'+i['name']:i for i in chunk}
     if not titles:  # Skip processing if all titles in the chunk have been processed
         return
     enriched_data = enrich(titles)['query']['pages']
@@ -77,7 +82,7 @@ with open('results/enriched.csv', 'r') as file:
 # check the name column if present in processed_titles. if present, skip it. otherwise, add it to the list of titles to be enriched
 # append the enriched data to results/enriched.csv
         
-with open('results/clean_output-test.csv', 'r') as file, open('results/enriched.csv', 'a', newline='') as outfile:
+with open('results/clean_output.csv', 'r') as file, open('results/enriched.csv', 'a', newline='') as outfile:
     reader = csv.DictReader(file)
     
     #create csv writer ahta append new lines
@@ -87,14 +92,6 @@ with open('results/clean_output-test.csv', 'r') as file, open('results/enriched.
 
     #print length of processed_titles
     print(f"Processed {len(processed_titles)} rows")
-    print(processed_titles)
-    #for each row in cleaned, check if the name is in processed_titles, print if present and the name
-    for row in cleaned:
-        print(f"testing {row['name']}")
-
-
-    #for each row in cleaned, remove "File:" from the name
-    #refined = [{'name': row['name'].replace("File:", "")} for row in cleaned]
 
     filtered = [row for row in cleaned if row['name'] in processed_titles]
     refined = [row for row in cleaned if row['name'] not in processed_titles]
@@ -105,7 +102,8 @@ with open('results/clean_output-test.csv', 'r') as file, open('results/enriched.
     print(f"Filtered {len(filtered)} rows on {len(cleaned)} rows")
     print(f"Processing {len(refined)} rows on {len(cleaned)} rows")
     
-    chunks = list(create_chunks(refined, 1))
+    chunks = list(create_chunks(refined, 40))
+
 
     for chunk in chunks:
         print (f"Processing chunk {chunks.index(chunk)+1} of {len(chunks)}, {(chunks.index(chunk)+1)/len(chunks)*100}%")
