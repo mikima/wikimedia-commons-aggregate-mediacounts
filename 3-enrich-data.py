@@ -96,8 +96,10 @@ with open('results/clean_output.csv', 'r') as file, open('results/enriched.csv',
     filtered = [row for row in cleaned if row['name'] in processed_titles]
     refined = [row for row in cleaned if row['name'] not in processed_titles]
             
-
-
+    #sort refined by total
+    refined.sort(key=lambda x: int(x['total']), reverse=True)
+    #take the first 10000
+    refined = refined[:10000]
 
     print(f"Filtered {len(filtered)} rows on {len(cleaned)} rows")
     print(f"Processing {len(refined)} rows on {len(cleaned)} rows")
