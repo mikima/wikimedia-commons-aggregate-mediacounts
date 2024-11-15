@@ -15,10 +15,12 @@ def enrich(titles):
         'formatversion': '2',
         'format': 'json',
         'titles': "|".join(titles),
-        'prop': 'imageinfo',
-        'iiprop': 'url|size|mediatype'
+        'prop': 'imageinfo|categories',
+        'iiprop': 'url|size|mediatype',
+        'cllimit': 'max'  # Get all categories
     }
     response = requests.get(baseurl, params=params)
+    #print(response.url)
     #try yo get data
     try:
         data = response.json()
@@ -38,6 +40,9 @@ def process_and_write_csv(chunk, writer, processed_titles):
         try:
             imgtitle = page['title']
             imginfo = page['imageinfo'][0]
+            imgcats = [cat['title'] for cat in page['categories']]  # Extract categories
+            #print(imgcats)
+
             writer.writerow([
                 chunkdic[imgtitle.replace(" ", "_")]['name'],
                 imginfo['url'],
@@ -46,7 +51,8 @@ def process_and_write_csv(chunk, writer, processed_titles):
                 imginfo['width'] * imginfo['height'],
                 imginfo['mediatype'],
                 chunkdic[imgtitle.replace(" ", "_")]['total'],
-                chunkdic[imgtitle.replace(" ", "_")]['internal']
+                chunkdic[imgtitle.replace(" ", "_")]['internal'],
+                "|".join(imgcats)  # Join categories with a separator
             ])
             processed_titles.add(imgtitle)  # Mark title as processed
 
@@ -67,7 +73,7 @@ try:
 except FileNotFoundError:
     with open('results/enriched.csv', 'w', newline='') as outfile:
         writer = csv.writer(outfile)
-        writer.writerow(['title', 'url', 'width', 'height', 'area', 'mediatype', 'totalrequests', 'internalrequests'])
+        writer.writerow(['title', 'url', 'width', 'height', 'area', 'mediatype', 'totalrequests', 'internalrequests','categories'])
 
 
 #read 'enriched.csv', extract column "title" and add to processed_titles
