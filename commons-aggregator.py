@@ -100,6 +100,6 @@ delta = end_date - start_date   # returns timedelta
 
 for i in range(delta.days + 1):
     day = start_date + timedelta(days=i)
-    url = "https://dumps.wikimedia.org/other/mediacounts/daily/2023/mediacounts."+str(day)+".v00.tsv.bz2"
+    url = "https://dumps.wikimedia.org/other/mediacounts/daily/"+day.year+"/mediacounts."+str(day)+".v00.tsv.bz2"
     print(url)
     loadDecompress(url, 100)
