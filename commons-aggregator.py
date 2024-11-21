@@ -30,7 +30,7 @@ def show_progress(block_num, block_size, total_size):
     percent = (downloaded / total_size) * 100
     print(f"Downloading: {percent:.2f}% - {downloaded // (1024 * 1024)}MB/{total_size // (1024 * 1024)}MB", end='\r')
 
-def loadDecompress(url, limit):
+def loadDecompress(url, min_requests, limit):
     t0 = time.time()
 
     def aprint(text, startTime):
@@ -62,13 +62,24 @@ def loadDecompress(url, limit):
 
         with bz2.open(raw_zipped, mode='rt', encoding='utf-8') as file:
             tsv_reader = csv.reader(file, delimiter='\t')
+            # row 2 is total usage
+            # row 3 original
+            # row 7 transcoded
+            # rows 8-13 are disaggregated by transcoded
+            # row 22 internal refereers
+            # row 23 external refereers
+            # row 24 unknown refereers
             for row in tsv_reader:
                 if len(row) > 22 and "commons" in row[0]:
                     try:
-                        internal_requests = float(row[22])
-                        if internal_requests > 100:
+                        internal_requests = int(row[22])
+                        external_requests = int(row[23])
+                        transcoded_sm = int(row[8]) + int(row[9]) + int(row[10])
+                        transcoded_lg = int(row[11]) + int(row[12]) + int(row[13])
+                        original = int(row[3])
+                        if internal_requests > min_requests:
                             # Use negative value because heapq is a min-heap
-                            heapq.heappush(top_entries, (-internal_requests, row[0], row[2], internal_requests))
+                            heapq.heappush(top_entries, (-internal_requests, row[0], row[2], original, transcoded_sm, transcoded_lg, internal_requests, external_requests))
                             # Limit the heap size to 'limit'
                             if len(top_entries) > limit:
                                 heapq.heappop(top_entries)
@@ -85,10 +96,10 @@ def loadDecompress(url, limit):
         os.makedirs('out', exist_ok=True)
         with gzip.open(out_zipped, 'wt', encoding='utf-8') as f:
             writer = csv.writer(f)
-            headers = ['name', 'total', 'internal']
+            headers = ['name', 'total', 'original', 'transcoded_sm', 'transcoded_lg', 'internal', 'external']
             writer.writerow(headers)
             for entry in top_entries:
-                writer.writerow([entry[1], entry[2], entry[3]])
+                writer.writerow([entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]])
 
         aprint('Saved', t0)
 
@@ -107,4 +118,4 @@ delta = end_date - start_date
 for i in range(delta.days + 1):
     day = start_date + timedelta(days=i)
     url = f"https://dumps.wikimedia.org/other/mediacounts/daily/{day.year}/mediacounts.{day}.v00.tsv.bz2"
-    loadDecompress(url, limit=100)
+    loadDecompress(url, 100, 3000000)
