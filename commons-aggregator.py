@@ -118,4 +118,4 @@ delta = end_date - start_date
 for i in range(delta.days + 1):
     day = start_date + timedelta(days=i)
     url = f"https://dumps.wikimedia.org/other/mediacounts/daily/{day.year}/mediacounts.{day}.v00.tsv.bz2"
-    loadDecompress(url, 100, 3000000)
+    loadDecompress(url, 1000, 2000000)
