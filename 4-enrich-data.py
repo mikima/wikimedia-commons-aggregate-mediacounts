@@ -20,7 +20,7 @@ def enrich(titles):
         'cllimit': 'max'  # Get all categories
     }
     response = requests.get(baseurl, params=params)
-    #print(response.url)
+    print(response.url)
     #try yo get data
     try:
         data = response.json()
@@ -36,22 +36,24 @@ def process_and_write_csv(chunk, writer, processed_titles):
     if not titles:  # Skip processing if all titles in the chunk have been processed
         return
     enriched_data = enrich(titles)['query']['pages']
+    #print(chunkdic)
     for page in enriched_data:
         try:
+            print('image title:', page['title'], 'chunckdic:', chunkdic[page['title']])
             imgtitle = page['title']
             imginfo = page['imageinfo'][0]
             imgcats = [cat['title'] for cat in page['categories']]  # Extract categories
             #print(imgcats)
 
             writer.writerow([
-                chunkdic[imgtitle.replace(" ", "_")]['name'],
+                chunkdic[imgtitle]['name'],
                 imginfo['url'],
                 imginfo['width'],
                 imginfo['height'],
                 imginfo['width'] * imginfo['height'],
                 imginfo['mediatype'],
-                chunkdic[imgtitle.replace(" ", "_")]['total'],
-                chunkdic[imgtitle.replace(" ", "_")]['internal'],
+                chunkdic[imgtitle]['total'],
+                chunkdic[imgtitle]['internal'],
                 "|".join(imgcats)  # Join categories with a separator
             ])
             processed_titles.add(imgtitle)  # Mark title as processed
@@ -59,7 +61,7 @@ def process_and_write_csv(chunk, writer, processed_titles):
             #print success overriding previous line
             print(f" SUCCESS: {imgtitle} enriched")
         except KeyError:
-            print(f" ERROR: Missing data for {page['title']}")
+            print(f" ERROR for {page['title']}:{KeyError}")
 
 # Initialize processed_titles as set to keep track of processed titles
 
@@ -86,9 +88,9 @@ with open('results/enriched.csv', 'r') as file:
 
 # Process input CSV.
 # check the name column if present in processed_titles. if present, skip it. otherwise, add it to the list of titles to be enriched
-# append the enriched data to results/enriched.csv
+# append the enriched data to results/3_aggregated_clean.csv
         
-with open('results/clean_output.csv', 'r') as file, open('results/enriched.csv', 'a', newline='') as outfile:
+with open('results/3_aggregated_clean.csv', 'r') as file, open('results/4_enriched.csv', 'a', newline='') as outfile:
     reader = csv.DictReader(file)
     
     #create csv writer ahta append new lines

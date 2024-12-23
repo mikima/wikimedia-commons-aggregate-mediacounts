@@ -1,4 +1,6 @@
-#for each file in the folder "out", extract the first 100000 lines and save them in a new folder "out-10"
+# Second step of the pipeline.
+# for each file in the folder "out", extract the 100000 lines and save them in a new folder "out-10".
+# probably in the future we can skip this step by only extracting the 100000 lines in the first step.
 
 import os
 import sys

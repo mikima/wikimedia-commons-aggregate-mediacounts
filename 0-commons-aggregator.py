@@ -1,3 +1,8 @@
+# this is the first script to run in the pipeline.
+# it downloads the daily mediacounts files from Wikimedia, sort them by total views, and saves the top entries to a compressed CSV file.
+# at the moment return them divided by internal and external views, by level of transcoding, and the original file views.
+
+
 import urllib.request
 import time
 import csv
